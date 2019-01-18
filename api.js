@@ -39,7 +39,12 @@ xhr.interceptors.response.use((res) => {
       fs.writeFileSync('token.json', JSON.stringify(token));
     }
   }
-  return res.data;
+  if (res.data.statusCode === '000000') {
+    return res.data;
+  }
+  return Promise.reject(res.data);
+}, (error) => {
+  return Promise.reject(error);
 });
 const api = {
   login(username, password) {
@@ -54,22 +59,6 @@ const api = {
       },
     });
   },
-  getApiListByCondition() {
-    const data = {
-      spaceKey: 'PUwABKU15203820ded3304f79d21d0503be64733224ce4b',
-      projectHashKey: 'lIwd7sR1f379f87c209a8f755d60ce0e9ca5b0a4ea727a8',
-      groupID: 272732,
-      orderBy: 3,
-      asc: 0,
-      condition: 0,
-      apiStatus: 0,
-    };
-    return xhr({
-      url: '/apiManagementPro/Api/getApiListByCondition',
-      method: 'post',
-      data: data,
-    });
-  },
   getUserInfo() {
     return xhr({
       url: '/common/User/getUserInfo',
@@ -81,7 +70,7 @@ const api = {
       method: 'post',
       url: `/space/Company/getProductList`,
       data: {
-        spaceKey: 'PUwABKU15203820ded3304f79d21d0503be64733224ce4b',
+        spaceKey,
       },
     });
   },
@@ -90,6 +79,36 @@ const api = {
       method: 'post',
       url: `/space/Company/getCompanyList`,
       data: {},
+    });
+  },
+  getApiInfo({ spaceKey, projectHashKey, apiID }) {
+    return xhr({
+      method: 'post',
+      url: `/apiManagementPro/Api/getApi`,
+      data: { spaceKey, projectHashKey, apiID },
+    });
+  },
+  getApiListByCondition({
+                          spaceKey,
+                          projectHashKey,
+                          groupID,
+                          apiStatus = 0,
+                          condition = 0,
+                          asc = 0,
+                          orderBy = 3,
+                        }) {
+    return xhr({
+      method: 'post',
+      url: `/apiManagementPro/Api/getApiListByCondition`,
+      data: {
+        spaceKey,
+        projectHashKey,
+        groupID,
+        orderBy,
+        asc,
+        condition,
+        apiStatus,
+      },
     });
   },
 };
